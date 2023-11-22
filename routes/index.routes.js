@@ -18,6 +18,8 @@ module.exports = (app) => {
   );
   userRouter.get("/list", Authorization, users.getUserList);
   userRouter.put("/edit", Authorization, users.editUser);
+  userRouter.delete("/delete/:userId", Authorization, users.deleteUser);
+  userRouter.get("/allRoles", Authorization, users.allRoles);
 
   app.use("/users", userRouter);
 };

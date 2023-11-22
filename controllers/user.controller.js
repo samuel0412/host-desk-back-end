@@ -1,4 +1,4 @@
-const { User, ResetToken } = require("../models");
+const { User, ResetToken, Roles } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const {
@@ -73,7 +73,7 @@ exports.logIn = async (request, response) => {
       return false;
     }
     const checkForIfExists = await User.findOne({
-      where: { email: body.email },
+      where: { email: body.email.trim() },
     });
     if (checkForIfExists) {
       if (!checkForIfExists?.dataValues?.isActive) {
@@ -245,20 +245,20 @@ exports.makeUserDeactive = async (request, response) => {
     if (!userData) {
       response.status(500).json({ ack: 0, msg: `invalid  userId` });
       return;
-    }
-    if (id == userId) {
+    } else if (id == userId) {
       response.status(500).json({ ack: 0, msg: `You can't deactive your a/c` });
       return;
+    } else {
+      const userDeactive = await User.update(
+        { isActive: !userData.isActive },
+        { where: { id } }
+      );
+      response.status(200).json({
+        ack: 1,
+        msg: `User Successfully Deactivated `,
+        data: userDeactive,
+      });
     }
-    const userDeactive = await User.update(
-      { isActive: !userData.isActive },
-      { where: { id } }
-    );
-    response.status(200).json({
-      ack: 1,
-      msg: `User Successfully Deactivated `,
-      data: userDeactive,
-    });
   } catch (error) {
     response.status(500).json({ ack: 0, msg: error.message || `Server Error` });
   }
@@ -291,7 +291,7 @@ exports.getUserList = async (request, response) => {
 
 //edit user
 exports.editUser = async (request, response) => {
-  const userId = request.params.userId;
+  const userId = request.userId;
   try {
     const { error } = userUpdateSchema.validate(request.body);
     if (error) {
@@ -310,6 +310,38 @@ exports.editUser = async (request, response) => {
         response.status(200).json({ ack: 0, msg: "No User Data" });
       }
     }
+  } catch (error) {
+    response.status(200).json({ ack: 0, msg: error.message || "Server Error" });
+  }
+};
+exports.deleteUser = async (request, response) => {
+  const id = request.params.userId;
+  const userId = request.userId;
+  try {
+    const userData = await User.findByPk(id);
+
+    if (!userData) {
+      response.status(500).json({ ack: 0, msg: `invalid  userId` });
+    } else if (id == userId || userData.isAdmin) {
+      response.status(500).json({ ack: 0, msg: `You can't delete this a/c` });
+    } else {
+      const userDeleted = await User.destroy({ where: { id: userData.id } });
+      response.status(200).json({
+        ack: 1,
+        msg: `User Successfully deleted`,
+        data: userDeleted,
+      });
+    }
+  } catch (error) {
+    response.status(500).json({ ack: 0, msg: error.message || `Server Error` });
+  }
+};
+
+//All Roles
+exports.allRoles = async (request, response) => {
+  try {
+    const rolesData = await Roles.findAll();
+    response.status(200).json({ ack: 1, msg: "successful", data: rolesData });
   } catch (error) {
     response.status(200).json({ ack: 0, msg: error.message || "Server Error" });
   }
