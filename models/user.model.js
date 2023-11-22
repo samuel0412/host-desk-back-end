@@ -15,6 +15,17 @@ module.exports = (sequelize, DataTypes) => {
     profilePic: DataTypes.STRING,
     accountId: DataTypes.INTEGER,
     roleId: DataTypes.INTEGER,
+    city: DataTypes.STRING,
+    company: DataTypes.STRING,
+    state: DataTypes.STRING,
+    country: DataTypes.STRING,
+    address: DataTypes.STRING,
+    postalCode: DataTypes.STRING,
   });
+  User.associate = function (models) {
+    User.belongsTo(models.Roles, {
+      foreignKey: "roleId",
+    });
+  };
   return User;
 };

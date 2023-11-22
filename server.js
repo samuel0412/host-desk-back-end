@@ -13,6 +13,7 @@ app.use(express.json());
 require("./routes/index.routes")(app);
 require("./routes/contactUs.routes")(app);
 require("./routes/account.routes")(app);
+require("./routes/day.routes")(app);
 
 app.listen(port, () => {
   console.log(`server is listening to the port:${port}`);
